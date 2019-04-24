@@ -40,16 +40,28 @@ class MongoDBPipeline(object):
         except: print('<nav> item not found')
         site_title = ''
         try: site_title = item.title.get_text()
-        except: print('Title not found')
+        except: print('<title> not found')
         links = item.find_all('a')
         site_urls = [ link['href'] for link in links if '#' not in link['href'] ]
+        try:
+            for it in item.find_all('script'):
+                it.decompose()
+        except: print('<script> not found')
+        try:
+            for it in item.find_all('style'):
+                it.decompose()
+        except: print('<style> not found')
+        try:  item.find('footer').decompose()
+        except: print('<footer not found>')
+        clean_body = item.body
     
         site_body = self.parse_body(item.find_all('div'))
     
         clean_element.update( {'url' : obj['url'],
                                'site_name' : site_title,
                                'site_urls' : site_urls,
-                               'site_body' : site_body} )
+                               'site_body' : site_body,
+                               'original_body' : item.body.prettify()} )
         return clean_element
 
     def process_item(self, item, spider):
